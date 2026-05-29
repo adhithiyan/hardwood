@@ -269,7 +269,7 @@ class DrainSideOracleTest {
     }
 
     @Test
-    void orWithIsNotNullSibling_bothWaysAgree() {
+    void orWithIsNullSibling_bothWaysAgree() {
         // Mixes a null-check leaf into the OR — the matcher and MergePlan
         // both have to respect "definitely matches" semantics.
         Workload w = workload(0x05077);

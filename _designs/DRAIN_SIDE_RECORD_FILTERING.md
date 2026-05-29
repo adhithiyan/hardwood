@@ -115,7 +115,7 @@ Key shape choices:
 - **Hoisted `literal`, `recordCount`, `fullWords`, `tail`.** The inner `for (b = 0; b < 64; b++)` is a constant-bound loop that the JIT unrolls.
 - **`nulls == null` specialised outside the per-word loops.** One branch per call, not per element.
 
-NULL semantics: each fragment writes "definitely matches" — false on NULL. Word-wise AND of per-column matches gives SQL three-valued AND because any `unknown` conjunct unsets the bit; the same contract handles OR cleanly via word-wise OR (see the truth table under [Eligibility](#why-or-is-safe-under-definitely-matches-semantics)).
+NULL semantics: each fragment writes "definitely matches" — false on NULL. Word-wise AND of per-column matches gives SQL three-valued AND because any `unknown` conjunct unsets the bit; the same contract handles OR cleanly via word-wise OR (see the truth table under [Why `Or` is safe](#why-or-is-safe-under-definitely-matches-semantics)).
 
 `Null*BatchMatcher` short-circuits the per-bit loop entirely — `IsNullBatchMatcher.test` bulk-copies `nulls.toLongArray()`; `IsNotNullBatchMatcher.test` bulk-inverts the same. Like the typed matchers, bits past `recordCount` are left as-is and filtered by the consumer's `bit < limit` check.
 

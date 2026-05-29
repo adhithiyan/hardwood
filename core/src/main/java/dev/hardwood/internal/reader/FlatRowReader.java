@@ -104,6 +104,12 @@ public final class FlatRowReader implements RowReader {
     /// passed to [#mergeEvaluator]. `null` when the single-column fast path
     /// applies.
     private final long[][] perColumnMatches;
+    /// Projected indices of the columns [#mergePlan] actually reads, computed
+    /// once at construction. [#intersectMatches] reseats only these entries of
+    /// [#perColumnMatches] each batch, so the per-batch cost scales with the
+    /// filter width rather than the full projection width. `null` when the
+    /// single-column fast path applies.
+    private final int[] referencedColumns;
     private int pendingRowIndex = -1;
     /// Exclusive upper bound of the current run of consecutive-1 bits in
     /// [#combinedWords] starting at or before `rowIndex + 1`. While
@@ -137,6 +143,7 @@ public final class FlatRowReader implements RowReader {
         this.mergePlan = mergePlan;
         this.mergeEvaluator = needsOwnedBuffer ? new MergePlanEvaluator(wordsLen) : null;
         this.perColumnMatches = needsOwnedBuffer ? new long[columnCount][] : null;
+        this.referencedColumns = needsOwnedBuffer ? referencedColumns(mergePlan, columnCount) : null;
 
         // Build name-to-index map and cache column metadata
         this.nameToIndex = new StringToIntMap(columnCount);
@@ -766,15 +773,49 @@ public final class FlatRowReader implements RowReader {
             combinedWords = previousBatches[c.projectedIndex()].matches;
             return;
         }
-        // Snapshot per-column matches references for this batch and hand off
-        // to the shared evaluator. The same long[] entry from previousBatches
-        // gets read back; the indirection is one columnCount-sized assignment
-        // per batch — negligible vs. the per-row merge work.
-        for (int i = 0; i < columnCount; i++) {
-            perColumnMatches[i] = previousBatches[i].matches;
+        // Snapshot the matches references the plan reads for this batch and hand
+        // off to the shared evaluator. Only the plan-referenced columns are
+        // reseated (one pointer each); the indirection is negligible vs. the
+        // per-row merge work.
+        for (int i = 0; i < referencedColumns.length; i++) {
+            int c = referencedColumns[i];
+            perColumnMatches[c] = previousBatches[c].matches;
         }
         int activeWords = (batchSize + 63) >>> 6;
         mergeEvaluator.eval(mergePlan, combinedWords, activeWords, perColumnMatches);
+    }
+
+    /// Collects the projected column indices referenced by `plan`, so
+    /// [#intersectMatches] can reseat only those entries of [#perColumnMatches]
+    /// instead of all `columnCount` columns each batch.
+    private static int[] referencedColumns(MergePlan plan, int columnCount) {
+        boolean[] seen = new boolean[columnCount];
+        markReferenced(plan, seen);
+        int count = 0;
+        for (int i = 0; i < columnCount; i++) {
+            if (seen[i]) {
+                count++;
+            }
+        }
+        int[] result = new int[count];
+        int idx = 0;
+        for (int i = 0; i < columnCount; i++) {
+            if (seen[i]) {
+                result[idx++] = i;
+            }
+        }
+        return result;
+    }
+
+    private static void markReferenced(MergePlan node, boolean[] seen) {
+        switch (node) {
+            case MergePlan.Column c -> seen[c.projectedIndex()] = true;
+            case MergePlan.Compound compound -> {
+                for (MergePlan child : compound.children()) {
+                    markReferenced(child, seen);
+                }
+            }
+        }
     }
 
     // ==================== Close ====================
