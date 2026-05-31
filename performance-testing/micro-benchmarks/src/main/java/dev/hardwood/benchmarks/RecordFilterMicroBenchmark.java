@@ -54,7 +54,7 @@ import dev.hardwood.schema.ProjectedSchema;
 
 /// Predicate evaluation micro-benchmark, isolated from any I/O.
 ///
-/// Measures the per-row cost of [RecordFilterCompiler.compile] + [RowMatcher.test]
+/// Measures the per-row cost of `RecordFilterCompiler.compile` + `RowMatcher.test`
 /// across a range of predicate shapes that stress different aspects of the
 /// dispatch path:
 ///
@@ -132,7 +132,7 @@ public class RecordFilterMicroBenchmark {
 
     /// Drain-side variant: mirrors the production pipeline — per-column
     /// [ColumnBatchMatcher]s write per-column long[] match bitmaps, then the
-    /// shared [MergePlanEvaluator] combines them via the compiled [MergePlan]
+    /// shared [MergePlanEvaluator] combines them via the compiled `MergePlan`
     /// into one survivor mask. Surviving rows are then iterated via
     /// `Long.numberOfTrailingZeros`. Single-threaded — measures codegen quality
     /// against the value array, isolated from the parallelism story which
