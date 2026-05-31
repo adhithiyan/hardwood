@@ -212,7 +212,7 @@ Writers predating the modern logical-type union (older parquet-mr / Hive / Impal
 | `UINT_8`, `UINT_16`, `UINT_32`, `UINT_64` | `getValue` | `Integer` / `Long` (raw two's-complement bit pattern) |
 | `INTERVAL` | `getInterval` | `PqInterval` |
 
-`TIME_*` / `TIMESTAMP_*` are read as UTC-normalized instants, matching the parquet-format backward-compatibility rule for these annotations. Unsigned columns preserve the stored bit pattern — reinterpret with `Integer.toUnsignedLong` / `Long.toUnsignedString` for the unsigned magnitude. When a file carries both a `converted_type` and a modern `logicalType`, the `logicalType` takes precedence.
+`TIME_*` columns decode to a UTC-normalized `LocalTime` time-of-day and `TIMESTAMP_*` columns to a UTC-normalized `Instant`, matching the parquet-format backward-compatibility rule for these annotations. Unsigned columns preserve the stored bit pattern — reinterpret with `Integer.toUnsignedLong` / `Long.toUnsignedString` for the unsigned magnitude. When a file carries both a `converted_type` and a modern `logicalType`, the `logicalType` takes precedence.
 
 #### NULL columns
 

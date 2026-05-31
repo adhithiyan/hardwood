@@ -271,7 +271,7 @@ public class FileSchema {
             case DECIMAL -> decimalFromElement(element);
             // The parquet-format backward-compatibility rule maps the legacy
             // TIME_*/TIMESTAMP_* converted types to isAdjustedToUTC=true; these
-            // annotations always denoted UTC-normalized instants.
+            // annotations always denoted UTC-normalized values.
             case TIME_MILLIS -> new LogicalType.TimeType(true, LogicalType.TimeUnit.MILLIS);
             case TIME_MICROS -> new LogicalType.TimeType(true, LogicalType.TimeUnit.MICROS);
             case TIMESTAMP_MILLIS -> new LogicalType.TimestampType(true, LogicalType.TimeUnit.MILLIS);
@@ -294,7 +294,7 @@ public class FileSchema {
     /// scale defaults to `0`; a missing precision is a malformed schema.
     private static LogicalType.DecimalType decimalFromElement(SchemaElement element) {
         if (element.precision() == null) {
-            throw new IllegalStateException(
+            throw new IllegalArgumentException(
                     "DECIMAL converted type requires a precision: " + element.name());
         }
         int scale = element.scale() != null ? element.scale() : 0;
