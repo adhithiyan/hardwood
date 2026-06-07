@@ -119,5 +119,6 @@ both a `converted_type` and a modern `logicalType`, the `logicalType` takes prec
 
 The MAP group annotation has a legacy form too: some older parquet-mr / Hive / Impala files annotate
 only the inner repeated `key_value` group with `MAP_KEY_VALUE` and leave the outer group unannotated.
-Hardwood recognizes this form as a map, so `getMap` returns a `PqMap` and `getColumn(...).logicalType()`
-reports a `MapType` exactly as it does for the modern `MAP` annotation.
+Hardwood recognizes this form as a map, so `getMap` returns a `PqMap` and the group's
+`SchemaNode.GroupNode.isMap()` reports `true` (with `logicalType()` returning a `MapType`), exactly as
+for the modern `MAP` annotation.

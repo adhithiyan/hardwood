@@ -296,6 +296,8 @@ public class FileSchema {
     /// group. Older parquet-mr / Hive / Impala writers emit this form; surfacing
     /// it as a [LogicalType.MapType] lets the rest of the reader treat it
     /// identically to a MAP-annotated group.
+    ///
+    /// @see <a href="https://github.com/apache/parquet-format/blob/master/LogicalTypes.md#maps">Parquet LogicalTypes – Maps backward-compatibility rules</a>
     private static LogicalType effectiveGroupLogicalType(SchemaElement element, List<SchemaNode> children) {
         if (element.logicalType() != null) {
             return element.logicalType();

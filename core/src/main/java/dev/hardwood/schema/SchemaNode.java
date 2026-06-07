@@ -19,9 +19,7 @@ import dev.hardwood.metadata.RepetitionType;
 ///
 /// @see <a href="https://parquet.apache.org/docs/file-format/nestedencoding/">File Format – Nested Encoding</a>
 /// @see <a href="https://github.com/apache/parquet-format/blob/master/src/main/thrift/parquet.thrift">parquet.thrift</a>
-public sealed
-
-interface SchemaNode {
+public sealed interface SchemaNode {
 
     /// Returns the field name.
     String name();
